@@ -1,5 +1,5 @@
 """
-Article store — persists generated articles and pipeline events to disk.
+Article store - persists generated articles and pipeline events to disk.
 
 Simple JSON-file store. No database dependency.
 """

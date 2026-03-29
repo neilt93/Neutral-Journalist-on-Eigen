@@ -1,5 +1,5 @@
 """
-Neutral Journalism Agent — Main orchestration loop.
+Neutral Journalism Agent - Main orchestration loop.
 
 Pipeline: Ingest → Cluster → Generate → Calibrate → Attest → Publish
 

@@ -1,5 +1,5 @@
 """
-Publish gate — explicit go/no-go decisions before publishing an article.
+Publish gate - explicit go/no-go decisions before publishing an article.
 
 Checks ALL bias and epistemic dimensions, not just slant. A false-balance
 article with 0.00 slant but terrible consensus preservation gets blocked.

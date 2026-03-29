@@ -1,7 +1,7 @@
 """
-Web app for the Neutral Journalism Agent.
+Web app for The Neutral Wire.
 
-Runs the autonomous pipeline in a background loop and serves a news feed UI.
+Runs the autonomous pipeline in a background loop and serves the news feed UI.
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ structlog.configure(
 )
 log = structlog.get_logger()
 
-app = FastAPI(title="Neutral Journalism Agent")
+app = FastAPI(title="The Neutral Wire")
 store = ArticleStore()
 pipeline_log = PipelineLog()
 
@@ -60,7 +60,7 @@ def _get_model() -> str:
 
 
 def _load_source_settings() -> dict:
-    """Load source config — same logic as main.py daemon."""
+    """Load source config - same logic as main.py daemon."""
     with open("config/sources.yaml") as f:
         data = yaml.safe_load(f)
     return {
@@ -116,7 +116,7 @@ async def run_pipeline_cycle():
     model = _get_model()
     evaluator = os.getenv("EIGENAI_EVALUATOR_MODEL") or model
 
-    # Load config — same as daemon
+    # Load config - same as daemon
     source_settings = _load_source_settings()
     topic_settings = load_topic_settings()
     sources = source_settings["sources"]

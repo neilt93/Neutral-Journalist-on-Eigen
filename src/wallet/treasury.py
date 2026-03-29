@@ -1,7 +1,7 @@
 """
 Agent treasury management via AgentKit.
 
-The agent is economically autonomous — it has its own wallet, can pay for
+The agent is economically autonomous - it has its own wallet, can pay for
 compute (EigenAI inference, EigenCompute), and manage funds. AgentKit
 provides the wallet primitives.
 """

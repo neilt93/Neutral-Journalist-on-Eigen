@@ -1,7 +1,7 @@
 """
 Neutrality calibration loop.
 
-This is the core differentiator: generate → evaluate → re-generate until
+This is the core differentiator: generate -> evaluate -> re-generate until
 the article passes the slant threshold. Uses a separate evaluator model
 to avoid the self-assessment problem identified by Hall.
 """
@@ -36,12 +36,12 @@ RECALIBRATION_PROMPT = """The following article was evaluated and found to have 
 
 ## Instructions
 Rewrite the article to address the specific issues above:
-- If slant is negative, the article leans left — add more right-of-center perspectives
-- If slant is positive, the article leans right — add more left-of-center perspectives
+- If slant is negative, the article leans left - add more right-of-center perspectives
+- If slant is positive, the article leans right - add more left-of-center perspectives
 - If loaded language is high, replace emotionally charged words with neutral alternatives
 - If omission risk is high, add missing countervailing facts or context
 - If source balance is low, give more space to underrepresented perspectives
-- If consensus preservation is low, do NOT flatten expert consensus into false 50/50 debate — reflect the actual weight of evidence while noting dissent
+- If consensus preservation is low, do NOT flatten expert consensus into false 50/50 debate - reflect the actual weight of evidence while noting dissent
 - If attribution is low, attribute disputed claims to their sources instead of stating them as narrator fact
 - Use more hedging/ambivalent language where claims are genuinely contested
 

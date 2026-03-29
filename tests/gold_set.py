@@ -247,10 +247,10 @@ GOLD_SET: list[GoldCase] = [
         expected_slant_magnitude="mild",
         expect_loaded_language=False,
         expect_omission_risk=True,  # Omits the overwhelming consensus
-        expect_source_imbalance=False,  # Both "sides" get space — that's the problem
+        expect_source_imbalance=False,  # Both "sides" get space - that's the problem
         notes="Key test: false balance. Gives equal weight to overwhelming "
               "scientific consensus and fringe skepticism. The 'balance' itself "
-              "is the bias — it implies the debate is 50/50 when it's 97/3.",
+              "is the bias - it implies the debate is 50/50 when it's 97/3.",
         requires_strong_model=True,  # gpt-4o-mini treats "both sides presented" as neutral
         requires_frontier_model=True,
         expect_low_consensus_preservation=True,

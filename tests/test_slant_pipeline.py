@@ -2,9 +2,9 @@
 Tests for the slant evaluation pipeline.
 
 Three layers:
-1. Unit tests — deterministic logic (ambivalent ratio, source balance, thresholds)
-2. Behavioral tests — gold set articles with expected evaluator outcomes
-3. Regression tests — specific subtle failure modes
+1. Unit tests - deterministic logic (ambivalent ratio, source balance, thresholds)
+2. Behavioral tests - gold set articles with expected evaluator outcomes
+3. Regression tests - specific subtle failure modes
 
 Unit tests run without any LLM. Behavioral and regression tests require
 an LLM evaluator (set EIGENAI_API_KEY and EIGENAI_API_BASE, or they skip).
@@ -59,7 +59,7 @@ from tests.gold_set import GOLD_SET, GoldCase
 
 
 # ============================================================
-# UNIT TESTS — deterministic, no LLM needed
+# UNIT TESTS - deterministic, no LLM needed
 # ============================================================
 
 class TestAmbivalentWordRatio:
@@ -334,7 +334,7 @@ class TestClusterByTopicFiltering:
 
 
 # ============================================================
-# EVALUATOR MOCK — for testing evaluate_slant without an LLM
+# EVALUATOR MOCK - for testing evaluate_slant without an LLM
 # ============================================================
 
 def _mock_openai_client(evaluator_response: dict) -> AsyncOpenAI:
@@ -451,7 +451,7 @@ class TestEvaluateSlantWithMock:
 
 
 # ============================================================
-# BEHAVIORAL TESTS — gold set, requires LLM evaluator
+# BEHAVIORAL TESTS - gold set, requires LLM evaluator
 # ============================================================
 
 def _has_evaluator():
@@ -540,7 +540,7 @@ class TestGoldSetBehavioral:
 
 
 # ============================================================
-# REGRESSION TESTS — specific subtle failure modes
+# REGRESSION TESTS - specific subtle failure modes
 # ============================================================
 
 class TestRegressionSubtleBias:
