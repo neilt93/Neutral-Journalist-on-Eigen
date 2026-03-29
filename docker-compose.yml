@@ -1,0 +1,16 @@
+services:
+  agent:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - ./config:/app/config:ro    # Mount config for easy iteration
+      - agent-data:/app/data        # Persistent storage for article history
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  agent-data:

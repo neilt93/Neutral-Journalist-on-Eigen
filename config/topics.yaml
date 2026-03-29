@@ -1,0 +1,46 @@
+# Topic categories the agent monitors
+# These map to the 30 political topics in the Hall framework
+
+topics:
+  - name: economy
+    keywords: [economy, inflation, jobs, unemployment, GDP, recession, markets, trade]
+    priority: high
+
+  - name: immigration
+    keywords: [immigration, border, migrants, asylum, deportation, visa]
+    priority: high
+
+  - name: healthcare
+    keywords: [healthcare, insurance, medicare, medicaid, hospitals, pharma]
+    priority: high
+
+  - name: climate
+    keywords: [climate, environment, emissions, renewable, fossil fuel, EPA]
+    priority: high
+
+  - name: education
+    keywords: [education, schools, universities, student loans, curriculum]
+    priority: medium
+
+  - name: foreign_policy
+    keywords: [foreign policy, diplomacy, NATO, UN, sanctions, military]
+    priority: high
+
+  - name: technology
+    keywords: [technology, AI, regulation, privacy, antitrust, social media]
+    priority: medium
+
+  - name: criminal_justice
+    keywords: [crime, police, prison, sentencing, courts, justice reform]
+    priority: medium
+
+  - name: elections
+    keywords: [election, voting, campaign, ballot, polls, candidates]
+    priority: high
+
+  - name: fiscal_policy
+    keywords: [taxes, budget, deficit, spending, debt ceiling, appropriations]
+    priority: medium
+
+# Minimum articles from different sources before the agent writes on a topic
+min_source_coverage: 3

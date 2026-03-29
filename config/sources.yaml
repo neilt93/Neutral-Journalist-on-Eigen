@@ -1,0 +1,62 @@
+# News sources with known editorial positions
+# slant: estimated left-right position (-1.0 = far left, 0.0 = center, 1.0 = far right)
+# These initial estimates are from media bias research; the agent refines them over time.
+
+sources:
+  # Left-leaning
+  - name: NPR
+    type: rss
+    url: https://feeds.npr.org/1001/rss.xml
+    slant: -0.35
+    reliability: high
+
+  - name: The Guardian
+    type: api
+    url: https://content.guardianapis.com/search
+    api_key_env: GUARDIAN_API_KEY
+    slant: -0.40
+    reliability: high
+
+  - name: Reuters
+    type: rss
+    url: https://www.rss.reuters.com/news/topNews
+    slant: -0.05
+    reliability: very_high
+
+  # Center
+  - name: Associated Press
+    type: rss
+    url: https://rsshub.app/apnews/topics/apf-topnews
+    slant: 0.0
+    reliability: very_high
+
+  - name: BBC News
+    type: rss
+    url: https://feeds.bbci.co.uk/news/rss.xml
+    slant: -0.10
+    reliability: high
+
+  # Right-leaning
+  - name: Wall Street Journal
+    type: rss
+    url: https://feeds.a.dj.com/rss/RSSWorldNews.xml
+    slant: 0.25
+    reliability: high
+
+  - name: The Economist
+    type: rss
+    url: https://www.economist.com/international/rss.xml
+    slant: 0.10
+    reliability: very_high
+
+  - name: Fox News
+    type: rss
+    url: https://moxie.foxnews.com/google-publisher/latest.xml
+    slant: 0.55
+    reliability: medium
+
+# Minimum sources required per article for balanced coverage
+min_sources_per_article: 3
+
+# Must include at least one source from each side of center
+require_balanced_sourcing: true
