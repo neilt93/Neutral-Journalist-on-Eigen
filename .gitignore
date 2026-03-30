@@ -31,3 +31,4 @@ Thumbs.db
 
 # Pytest
 .pytest_cache/
+contracts/package-lock.json
