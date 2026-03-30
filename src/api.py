@@ -70,12 +70,16 @@ def _load_source_settings() -> dict:
     }
 
 
+_used_images: set[str] = set()
+
+
 def _article_to_dict(article: GeneratedArticle, attestation_hash: str | None = None) -> dict:
-    # Pick the best image from sources (first non-None from highest-reliability source)
+    # Pick a unique image from sources (avoid reusing across articles)
     image_url = None
     for src in sorted(article.sources_used, key=lambda a: a.source_reliability.value, reverse=True):
-        if src.image_url:
+        if src.image_url and src.image_url not in _used_images:
             image_url = src.image_url
+            _used_images.add(image_url)
             break
 
     return {
@@ -156,6 +160,9 @@ async def run_pipeline_cycle():
     published = 0
     tee_attestation = await get_tee_attestation()
 
+    # Deduplicate: skip topics we've already written about recently
+    existing_headlines = {a.get("headline", "").lower() for a in store.list_all(limit=20)}
+
     for cluster in clusters[:3]:  # Cap at 3 articles per cycle
         topic = cluster.topic
 
@@ -177,6 +184,18 @@ async def run_pipeline_cycle():
                 generation_model=model,
                 evaluator_model=evaluator,
             )
+
+            # Dedup: skip if headline is too similar to an existing article
+            from difflib import SequenceMatcher
+            headline_lower = article.headline.lower()
+            is_dup = any(
+                SequenceMatcher(None, headline_lower, h).ratio() > 0.6
+                for h in existing_headlines
+            )
+            if is_dup:
+                pipeline_log.log("gate", f"[{topic}] SKIPPED: too similar to existing article", topic=topic)
+                continue
+            existing_headlines.add(headline_lower)
 
             slant = article.slant_score
             pipeline_log.log("evaluation", f"[{topic}] Slant: {slant.overall_slant_score:+.2f}, "
