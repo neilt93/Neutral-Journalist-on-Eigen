@@ -1,16 +1,36 @@
 services:
+  # Production daemon: strict attested publisher (default for EigenCompute)
   agent:
     build: .
     env_file: .env
     restart: unless-stopped
     volumes:
-      - ./config:/app/config:ro    # Mount config for easy iteration
-      - agent-data:/app/data        # Persistent storage for article history
+      - ./config:/app/config:ro
+      - agent-data:/app/data
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+
+  # Web UI: demo/presentation frontend with autonomous pipeline
+  # Run with: docker compose up web
+  web:
+    build: .
+    env_file: .env
+    ports:
+      - "8000:8000"
+    entrypoint: ["python", "-m", "uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    volumes:
+      - ./config:/app/config:ro
+      - ./static:/app/static:ro
+      - agent-data:/app/data
 
 volumes:
   agent-data:
