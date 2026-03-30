@@ -100,6 +100,7 @@ class GeneratedArticle(BaseModel):
     calibration_history: list[dict] = Field(default_factory=list)
     model_id: str = ""
     prompt_hash: str = ""
+    perspective: str = "neutral"  # "neutral", "left", or "right"
     generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @property

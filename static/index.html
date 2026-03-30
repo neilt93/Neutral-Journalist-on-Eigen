@@ -30,67 +30,77 @@
   .banner.active{display:block}
 
   /* Pages */
-  .page{display:none;max-width:780px;margin:0 auto;padding:2.5rem 1.5rem}
+  .page{display:none;max-width:1400px;margin:0 auto;padding:2.5rem 1.5rem}
   .page.active{display:block}
 
   /* Feed */
   .feed-empty{text-align:center;padding:5rem 1rem;color:#999}
   .feed-empty p{margin-bottom:0.5rem}
 
-  /* Article card */
-  .card{margin-bottom:2.5rem;padding-bottom:2.5rem;border-bottom:1px solid #e0e0e0}
-  .card:last-child{border-bottom:none}
-  .card-image{width:100%;height:320px;object-fit:cover;border-radius:4px;margin-bottom:1.25rem;background:#e8e8e8}
-  .card-image.placeholder{display:flex;align-items:center;justify-content:center;color:#bbb;font-family:-apple-system,sans-serif;font-size:0.9rem}
-  .card h2{font-size:1.65rem;font-weight:400;line-height:1.35;margin-bottom:0.6rem}
-  .card h2 a:hover{text-decoration:underline}
-  .card-meta{font-size:0.78rem;color:#999;font-family:-apple-system,sans-serif;margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center}
-  .card-meta .sep{color:#ddd}
-  .card-body{font-size:1.05rem;line-height:1.85;color:#333;margin-bottom:1.25rem}
-  .card-body p{margin-bottom:1rem}
+  /* === Three-column layout === */
+  .topic-group{margin-bottom:3rem;padding-bottom:2.5rem;border-bottom:2px solid #e0e0e0}
+  .topic-group:last-child{border-bottom:none}
+  .topic-header{text-align:center;margin-bottom:1.5rem}
+  .topic-header h2{font-size:1.5rem;font-weight:400;margin-bottom:0.3rem}
+  .topic-header .topic-meta{font-size:0.78rem;color:#999;font-family:-apple-system,sans-serif}
 
-  /* Verification badge */
-  .verified-badge{display:inline-flex;align-items:center;gap:0.3rem;font-family:-apple-system,sans-serif;font-size:0.72rem;color:#22c55e;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:3px;padding:0.15rem 0.5rem}
+  .columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem}
+  @media(max-width:900px){.columns{grid-template-columns:1fr}}
+
+  .col{background:#fff;border:1px solid #e8e8e8;border-radius:6px;padding:1.25rem;display:flex;flex-direction:column}
+  .col.col-left{border-top:3px solid #3b82f6}
+  .col.col-neutral{border-top:3px solid #22c55e}
+  .col.col-right{border-top:3px solid #ef4444}
+
+  .col-label{font-family:-apple-system,sans-serif;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.4rem}
+  .col-label .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .col-left .col-label{color:#3b82f6}
+  .col-left .col-label .dot{background:#3b82f6}
+  .col-neutral .col-label{color:#22c55e}
+  .col-neutral .col-label .dot{background:#22c55e}
+  .col-right .col-label{color:#ef4444}
+  .col-right .col-label .dot{background:#ef4444}
+
+  .col h3{font-size:1.15rem;font-weight:400;line-height:1.35;margin-bottom:0.6rem}
+  .col-body{font-size:0.92rem;line-height:1.75;color:#333;flex:1}
+  .col-body p{margin-bottom:0.75rem}
+
+  /* Slant meter */
+  .slant-meter{margin:0.75rem 0;font-family:-apple-system,sans-serif}
+  .slant-meter-label{font-size:0.7rem;color:#999;margin-bottom:0.25rem}
+  .slant-track{position:relative;height:6px;background:linear-gradient(to right,#3b82f6,#e5e7eb,#ef4444);border-radius:3px}
+  .slant-needle{position:absolute;top:-3px;width:12px;height:12px;border-radius:50%;background:#1a1a1a;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.3);transform:translateX(-50%)}
+
+  /* Score pills */
+  .score-pills{display:flex;flex-wrap:wrap;gap:0.4rem;margin:0.75rem 0;font-family:-apple-system,sans-serif;font-size:0.7rem}
+  .pill{padding:0.15rem 0.5rem;border-radius:10px;display:inline-flex;align-items:center;gap:0.25rem}
+  .pill.good{background:#f0fdf4;color:#22c55e;border:1px solid #bbf7d0}
+  .pill.warn{background:#fffbeb;color:#f59e0b;border:1px solid #fde68a}
+  .pill.bad{background:#fef2f2;color:#ef4444;border:1px solid #fecaca}
+
+  /* Verified badge */
+  .verified-badge{display:inline-flex;align-items:center;gap:0.3rem;font-family:-apple-system,sans-serif;font-size:0.7rem;color:#22c55e;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:3px;padding:0.15rem 0.5rem;margin-top:0.5rem}
   .failed-badge{color:#ef4444;background:#fef2f2;border-color:#fecaca}
 
-  /* Score bar */
-  .score-bar{display:flex;gap:1rem;margin:1rem 0;font-family:-apple-system,sans-serif;font-size:0.78rem;color:#888;flex-wrap:wrap}
-  .score-item{display:flex;align-items:center;gap:0.3rem}
-  .score-item .dot{width:8px;height:8px;border-radius:50%}
-
-  /* Source spectrum (inline) */
-  .inline-spectrum{position:relative;height:24px;background:linear-gradient(to right,#dbeafe,#f3f4f6,#fee2e2);border-radius:4px;margin:0.75rem 0 0.25rem}
-  .inline-spectrum-labels{display:flex;justify-content:space-between;font-size:0.6rem;color:#bbb;font-family:-apple-system,sans-serif}
-  .idot{position:absolute;border-radius:50%;background:#1a1a1a;transform:translate(-50%,-50%);top:50%;cursor:default;transition:transform 0.15s}
-  .idot:hover{transform:translate(-50%,-50%) scale(1.5);z-index:10}
-  .idot .tip{display:none;position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;border-radius:3px;padding:0.2rem 0.5rem;font-size:0.68rem;white-space:nowrap;z-index:20}
-  .idot:hover .tip{display:block}
-
   /* Expand sections */
-  .expand-toggle{font-family:-apple-system,sans-serif;font-size:0.78rem;color:#4a6fa5;cursor:pointer;background:none;border:none;padding:0;margin-right:1.25rem}
+  .expand-toggle{font-family:-apple-system,sans-serif;font-size:0.72rem;color:#4a6fa5;cursor:pointer;background:none;border:none;padding:0;margin-right:0.75rem;margin-top:0.5rem}
   .expand-toggle:hover{text-decoration:underline}
-  .expand-content{display:none;margin-top:1rem;padding:1rem;background:#f8f8f6;border:1px solid #e8e8e8;border-radius:4px;font-family:-apple-system,sans-serif;font-size:0.82rem}
+  .expand-content{display:none;margin-top:0.75rem;padding:0.75rem;background:#f8f8f6;border:1px solid #e8e8e8;border-radius:4px;font-family:-apple-system,sans-serif;font-size:0.78rem}
   .expand-content.open{display:block}
 
   /* Calibration rounds */
-  .cal-round{padding:0.6rem 0;border-bottom:1px solid #eee}
+  .cal-round{padding:0.5rem 0;border-bottom:1px solid #eee}
   .cal-round:last-child{border-bottom:none}
-  .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem}
-  .cal-num{font-weight:700;color:#4a6fa5}
-  .cal-pass{font-size:0.72rem;font-weight:600;padding:0.1rem 0.4rem;border-radius:2px}
+  .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.2rem}
+  .cal-num{font-weight:700;color:#4a6fa5;font-size:0.75rem}
+  .cal-pass{font-size:0.68rem;font-weight:600;padding:0.1rem 0.4rem;border-radius:2px}
   .cal-pass.yes{color:#22c55e;background:#f0fdf4}.cal-pass.no{color:#ef4444;background:#fef2f2}
-  .cal-scores{font-size:0.75rem;color:#888;margin-bottom:0.25rem}
+  .cal-scores{font-size:0.7rem;color:#888;margin-bottom:0.2rem}
   .cal-scores span{color:#555}
-  .cal-failures{font-size:0.72rem;color:#ef4444;margin-top:0.2rem}
-  .cal-rationale{font-size:0.75rem;color:#999;line-height:1.5;margin-top:0.25rem}
-
-  /* Verify panel */
-  .verify-row{display:flex;justify-content:space-between;padding:0.35rem 0;border-bottom:1px solid #eee;font-size:0.78rem}
-  .verify-row .vk{color:#888;min-width:130px}.verify-row .vv{color:#333;word-break:break-all;text-align:right;font-family:monospace;font-size:0.72rem}
-  .verify-note{margin-top:0.75rem;padding:0.6rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:4px;font-size:0.75rem;color:#22c55e}
+  .cal-rationale{font-size:0.7rem;color:#999;line-height:1.4;margin-top:0.2rem}
 
   /* Attestation */
-  .attest{font-family:monospace;font-size:0.7rem;color:#4a6fa5;word-break:break-all;margin-top:0.5rem}
+  .attest{font-family:monospace;font-size:0.65rem;color:#4a6fa5;word-break:break-all;margin-top:0.5rem}
 
   /* --- SOURCES PAGE --- */
   .section-title{font-size:0.85rem;color:#888;text-transform:uppercase;letter-spacing:0.1em;font-family:-apple-system,sans-serif;margin-bottom:1.5rem;font-weight:400}
@@ -172,87 +182,117 @@ function renderSources(){
     const c=sColor(s.slant);const dir=s.slant<-0.15?'Left-leaning':s.slant>0.15?'Right-leaning':'Center';
     return`<div class="source-card"><h3>${esc(s.name)}</h3><div class="source-detail">${s.type.toUpperCase()} &middot; ${s.reliability} reliability</div><div class="source-detail">${dir}</div><div class="slant-badge" style="color:${c};background:${c}12;border:1px solid ${c}33">${s.slant>=0?'+':''}${s.slant.toFixed(2)}</div></div>`}).join('')}
 
-function renderArticles(articles){
+function renderArticles(groups){
   const el=document.getElementById('articles-list');
-  if(!articles.length){el.innerHTML='<div class="feed-empty"><p style="font-size:1.2rem;font-family:Georgia,serif">No articles yet</p><p style="font-size:0.9rem;color:#aaa;font-family:-apple-system,sans-serif">The pipeline is running. Articles will appear as they pass the publish gate.</p></div>';return}
+  if(!groups.length){el.innerHTML='<div class="feed-empty"><p style="font-size:1.2rem;font-family:Georgia,serif">No articles yet</p><p style="font-size:0.9rem;color:#aaa;font-family:-apple-system,sans-serif">The pipeline is running. Articles will appear as they pass the publish gate.</p></div>';return}
 
-  el.innerHTML=articles.map((a,i)=>{
-    const s=a.slant||{};const sl=s.overall_slant_score;const pass=s.pass_fail;
-    const time=a.stored_at?new Date(a.stored_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
-    const outlets=new Set((a.sources||[]).map(x=>x.name)).size;
-    const hist=a.calibration_history||[];
-    const paras=(a.body||'').split('\n\n').filter(Boolean).slice(0,6).map(p=>`<p>${esc(p)}</p>`).join('');
-
-    // Image
-    const img=a.image_url
-      ?`<img class="card-image" src="${esc(a.image_url)}" alt="" onerror="this.style.display='none'">`
-      :'';
-
-    // Score dots
-    const scoreDots=[
-      {l:'Slant',v:sl,good:sl!=null&&Math.abs(sl)<=0.15},
-      {l:'Loaded',v:s.loaded_language_score,good:(s.loaded_language_score||0)<=0.3},
-      {l:'Consensus',v:s.consensus_preservation_score,good:(s.consensus_preservation_score||0)>=0.7},
-      {l:'Attribution',v:s.attribution_score,good:(s.attribution_score||0)>=0.7},
-    ];
-
-    // Calibration history
-    const histHtml=hist.length?hist.map(r=>`<div class="cal-round">
-      <div class="cal-header"><span class="cal-num">Round ${r.round}</span><span class="cal-pass ${r.pass?'yes':'no'}">${r.pass?'PASS':'FAIL'}</span></div>
-      <div class="cal-scores">Slant <span>${fmtS(r.slant)}</span> &middot; Loaded <span>${pct(r.loaded_language)}</span> &middot; Consensus <span>${pct(r.consensus_preservation)}</span> &middot; Attribution <span>${pct(r.attribution)}</span></div>
-      ${r.gate_failures&&r.gate_failures.length?`<div class="cal-failures">${r.gate_failures.join('; ')}</div>`:''}
-      <div class="cal-rationale">${esc((r.rationale||'').slice(0,200))}${(r.rationale||'').length>200?'...':''}</div>
-    </div>`).join(''):'<div style="color:#999;font-size:0.82rem">Passed on first evaluation</div>';
-
-    // Verify panel
-    const ah=a.attestation_hash||'';
-    const verifyHtml=`<div style="font-family:-apple-system,sans-serif">
-      <div class="verify-row"><span class="vk">Content hash</span><span class="vv">${a.content_hash||'N/A'}</span></div>
-      <div class="verify-row"><span class="vk">Prompt hash</span><span class="vv">${a.prompt_hash||'N/A'}</span></div>
-      <div class="verify-row"><span class="vk">Model</span><span class="vv">${a.model_id||'N/A'}</span></div>
-      <div class="verify-row"><span class="vk">Calibration</span><span class="vv">${a.calibration_rounds||0} rounds</span></div>
-      <div class="verify-row"><span class="vk">Sources</span><span class="vv">${(a.sources||[]).length} articles, ${outlets} outlets</span></div>
-      <div class="verify-row"><span class="vk">Attestation</span><span class="vv">${ah?ah.startsWith('0x')?`<a href="https://sepolia.etherscan.io/tx/${ah}" target="_blank" style="color:#4a6fa5">${ah.slice(0,20)}...</a>`:ah:'dev mode (pending)'}</span></div>
-      <div class="verify-note">In production, EigenCompute TEE proves this exact Docker image with this exact neutrality pipeline produced this article.</div>
-    </div>`;
-
-    // Attestation link
-    const attestHtml=ah.startsWith('0x')
-      ?`<a class="attest" href="https://sepolia.etherscan.io/tx/${ah}" target="_blank">${ah}</a>`
-      :ah?`<div class="attest">${ah}</div>`:'';
-
-    return`<div class="card">
-      ${img}
-      <h2>${esc(a.headline)}</h2>
-      <div class="card-meta">
-        <span>${time}</span><span class="sep">&middot;</span>
-        <span>${(a.sources||[]).length} articles from ${outlets} outlets</span><span class="sep">&middot;</span>
-        <span>${a.calibration_rounds||0} calibration rounds</span><span class="sep">&middot;</span>
-        <span class="${pass?'verified-badge':'verified-badge failed-badge'}">${pass?'Verified Neutral':'Did Not Pass'} ${sl!=null?fmtS(sl):''}</span>
-      </div>
-      <div class="inline-spectrum" id="isp-${i}"></div>
-      <div class="inline-spectrum-labels"><span>Left</span><span>Center</span><span>Right</span></div>
-      <div class="card-body">${paras}</div>
-      <div class="score-bar">${scoreDots.map(d=>`<span class="score-item"><span class="dot" style="background:${d.good?'#22c55e':'#f59e0b'}"></span>${d.l}: ${d.l==='Slant'?(d.v!=null?fmtS(d.v):'?'):pct(d.v)}</span>`).join('')}</div>
-      <div>
-        <button class="expand-toggle" onclick="tog('cal-${i}')">Calibration History</button>
-        <button class="expand-toggle" onclick="tog('ver-${i}')">Verify Article</button>
-      </div>
-      <div class="expand-content" id="cal-${i}">${histHtml}</div>
-      <div class="expand-content" id="ver-${i}">${verifyHtml}</div>
-      ${attestHtml}
-    </div>`}).join('');
-
-  articles.forEach((a,i)=>{
-    const el=document.getElementById('isp-'+i);
-    if(el&&a.sources){
-      const counts={};a.sources.forEach(s=>{counts[s.name]=(counts[s.name]||0)+1});
-      dots(el,Object.entries(counts).map(([n,c])=>({name:n,slant:a.sources.find(x=>x.name===n).slant,size:Math.min(5+c*2,14)})),'idot');
+  el.innerHTML=groups.map((g,gi)=>{
+    // Support both grouped format (left/neutral/right) and legacy single-article format
+    if(g.left && g.neutral && g.right){
+      return renderGroup(g, gi);
+    } else {
+      // Legacy single article — show in neutral column only
+      return renderLegacySingle(g, gi);
     }
-  });
+  }).join('');
 }
 
-function tog(id){document.getElementById(id).classList.toggle('open')}
+function renderGroup(g, gi){
+  const topic = g.topic || 'News';
+  const neutral = g.neutral;
+  const time = g.stored_at ? new Date(g.stored_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+  const outlets = new Set((neutral.sources||[]).map(x=>x.name)).size;
+
+  return `<div class="topic-group">
+    <div class="topic-header">
+      <h2>${esc(topic)}</h2>
+      <div class="topic-meta">${time} &middot; ${(neutral.sources||[]).length} source articles from ${outlets} outlets</div>
+    </div>
+    <div class="columns">
+      ${renderCol(g.left, 'left', gi)}
+      ${renderCol(g.neutral, 'neutral', gi)}
+      ${renderCol(g.right, 'right', gi)}
+    </div>
+  </div>`;
+}
+
+function renderCol(a, perspective, gi){
+  if(!a) return `<div class="col col-${perspective}"><div class="col-label"><span class="dot"></span>${capFirst(perspective)}</div><p style="color:#999;font-size:0.85rem">Not available</p></div>`;
+
+  const s = a.slant || {};
+  const sl = s.overall_slant_score;
+  const pass = s.pass_fail;
+  const paras = (a.body||'').split('\n\n').filter(Boolean).slice(0,4).map(p=>`<p>${esc(p)}</p>`).join('');
+  const id = `${gi}-${perspective}`;
+
+  const labels = {left:'Left-Leaning Agent', neutral:'Neutral Agent', right:'Right-Leaning Agent'};
+
+  // Score pills — all 6 evaluator dimensions
+  const pills = [];
+  if(sl!=null) pills.push({l:'Slant',v:fmtS(sl),cls:Math.abs(sl)<=0.15?'good':Math.abs(sl)<=0.3?'warn':'bad'});
+  if(s.loaded_language_score!=null) pills.push({l:'Loaded',v:pct(s.loaded_language_score),cls:s.loaded_language_score<=0.3?'good':s.loaded_language_score<=0.6?'warn':'bad'});
+  if(s.omission_risk_score!=null) pills.push({l:'Omission',v:pct(s.omission_risk_score),cls:s.omission_risk_score<=0.3?'good':s.omission_risk_score<=0.6?'warn':'bad'});
+  if(s.source_balance_score!=null) pills.push({l:'Balance',v:pct(s.source_balance_score),cls:s.source_balance_score>=0.7?'good':s.source_balance_score>=0.4?'warn':'bad'});
+  if(s.consensus_preservation_score!=null) pills.push({l:'Consensus',v:pct(s.consensus_preservation_score),cls:s.consensus_preservation_score>=0.7?'good':s.consensus_preservation_score>=0.4?'warn':'bad'});
+  if(s.attribution_score!=null) pills.push({l:'Attribution',v:pct(s.attribution_score),cls:s.attribution_score>=0.7?'good':s.attribution_score>=0.4?'warn':'bad'});
+
+  // Calibration history (neutral only)
+  const hist = a.calibration_history || [];
+  const histHtml = hist.length ? hist.map(r=>`<div class="cal-round">
+    <div class="cal-header"><span class="cal-num">Round ${r.round}</span><span class="cal-pass ${r.pass?'yes':'no'}">${r.pass?'PASS':'FAIL'}</span></div>
+    <div class="cal-scores">Slant <span>${fmtS(r.slant)}</span> &middot; Loaded <span>${pct(r.loaded_language)}</span> &middot; Consensus <span>${pct(r.consensus_preservation)}</span></div>
+    <div class="cal-rationale">${esc((r.rationale||'').slice(0,150))}${(r.rationale||'').length>150?'...':''}</div>
+  </div>`).join('') : '';
+
+  // Attestation (neutral only)
+  const ah = a.attestation_hash || '';
+  const attestHtml = (perspective==='neutral' && ah) ?
+    (ah.startsWith('0x') ? `<a class="attest" href="https://sepolia.etherscan.io/tx/${ah}" target="_blank">${ah.slice(0,24)}...</a>` : `<div class="attest">${ah.slice(0,24)}...</div>`)
+    : '';
+
+  return `<div class="col col-${perspective}">
+    <div class="col-label"><span class="dot"></span>${labels[perspective]}</div>
+    <h3>${esc(a.headline)}</h3>
+
+    <div class="slant-meter">
+      <div class="slant-meter-label">Measured slant</div>
+      <div class="slant-track"><div class="slant-needle" style="left:${sl!=null?((sl+1)/2)*100:50}%"></div></div>
+    </div>
+
+    <div class="score-pills">${pills.map(p=>`<span class="pill ${p.cls}">${p.l}: ${p.v}</span>`).join('')}</div>
+
+    ${perspective==='neutral' ? `<span class="${pass?'verified-badge':'verified-badge failed-badge'}">${pass?'Verified Neutral':'Did Not Pass'} ${sl!=null?fmtS(sl):''}</span>` : ''}
+    ${perspective==='neutral' && a.calibration_rounds ? `<span style="font-family:-apple-system,sans-serif;font-size:0.7rem;color:#888;margin-left:0.4rem">${a.calibration_rounds} calibration rounds</span>` : ''}
+
+    <div class="col-body" style="margin-top:0.75rem">${paras}</div>
+
+    <div>
+      ${perspective==='neutral' && hist.length ? `<button class="expand-toggle" onclick="tog('cal-${id}')">Calibration History</button>` : ''}
+      <button class="expand-toggle" onclick="tog('rat-${id}')">Evaluator Rationale</button>
+    </div>
+    ${perspective==='neutral' && hist.length ? `<div class="expand-content" id="cal-${id}">${histHtml}</div>` : ''}
+    <div class="expand-content" id="rat-${id}">${s.rationale ? esc(s.rationale) : 'No rationale available'}</div>
+    ${attestHtml}
+  </div>`;
+}
+
+function renderLegacySingle(a, gi){
+  // Wrap legacy single article as a neutral-only group
+  const time = a.stored_at ? new Date(a.stored_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+  return `<div class="topic-group">
+    <div class="topic-header">
+      <h2>${esc(a.headline)}</h2>
+      <div class="topic-meta">${time}</div>
+    </div>
+    <div class="columns">
+      <div class="col col-left" style="opacity:0.4"><div class="col-label"><span class="dot"></span>Left-Leaning Agent</div><p style="color:#999;font-size:0.85rem">Generated before multi-perspective update</p></div>
+      ${renderCol(a, 'neutral', gi)}
+      <div class="col col-right" style="opacity:0.4"><div class="col-label"><span class="dot"></span>Right-Leaning Agent</div><p style="color:#999;font-size:0.85rem">Generated before multi-perspective update</p></div>
+    </div>
+  </div>`;
+}
+
+function tog(id){const el=document.getElementById(id);if(el)el.classList.toggle('open')}
 
 function renderActivity(status,events){
   document.getElementById('statsRow').innerHTML=`
@@ -265,12 +305,11 @@ function renderActivity(status,events){
   if(events.length&&events[0].phase!=='system'){b.classList.add('active');bt.textContent=events[0].message}else{b.classList.remove('active')}
 }
 
+function capFirst(s){return s.charAt(0).toUpperCase()+s.slice(1)}
 function fmtS(v){return(v>=0?'+':'')+v.toFixed(2)}
 function pct(v){return v!=null?(v*100).toFixed(0)+'%':'?'}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
 function sColor(v){const a=Math.abs(v);return a<=0.15?'#22c55e':a<=0.3?'#f59e0b':'#ef4444'}
-function badC(v){v=v||0;return v<=0.3?'#22c55e':v<=0.6?'#f59e0b':'#ef4444'}
-function goodC(v){v=v||0;return v>=0.7?'#22c55e':v>=0.4?'#f59e0b':'#ef4444'}
 
 async function poll(){try{const[a,s,l]=await Promise.all([fetch('/api/articles').then(r=>r.json()),fetch('/api/pipeline/status').then(r=>r.json()),fetch('/api/pipeline/log?limit=60').then(r=>r.json())]);renderArticles(a);renderActivity(s,l)}catch(e){}}
 async function trigger(){await fetch('/api/pipeline/trigger',{method:'POST'})}

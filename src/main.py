@@ -17,13 +17,16 @@ import yaml
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 
+from src.analysis.slant import evaluate_slant
 from src.attestation.onchain import create_attestation, get_tee_attestation, publish_onchain
 from src.generation.calibration import calibrated_generate
+from src.generation.writer import generate_article
 from src.ingestion.fetcher import fetch_all
 from src.ingestion.parser import cluster_by_topic, load_topic_settings
-from src.models import SourceConfig
+from src.models import SourceConfig, TopicCluster
 from src.publishing.gate import check_publish_gate
 from src.publishing.publisher import publish_article, publish_thread
+from src.store import ArticleStore
 from src.wallet.treasury import check_funds_sufficient, estimate_cycle_cost
 
 log = structlog.get_logger()
@@ -108,21 +111,34 @@ async def run_cycle(
     published = 0
     tee_attestation = await get_tee_attestation()
     require_onchain_attestation = _env_flag("REQUIRE_ONCHAIN_ATTESTATION", True)
+    store = ArticleStore()
 
     for cluster in clusters:
         try:
             log.info("processing_cluster", topic=cluster.topic, articles=len(cluster.articles))
 
-            # Generate + calibrate
-            article = await calibrated_generate(
+            # Generate neutral (calibrated) + left/right (evaluated only) in parallel
+            neutral_task = calibrated_generate(
                 cluster=cluster,
                 client=client,
                 generation_model=generation_model,
                 evaluator_model=evaluator_model,
             )
+            eval_model = evaluator_model or generation_model
+            left_task = _generate_and_evaluate(
+                cluster=cluster, client=client, model=generation_model,
+                evaluator_model=eval_model, perspective="left",
+            )
+            right_task = _generate_and_evaluate(
+                cluster=cluster, client=client, model=generation_model,
+                evaluator_model=eval_model, perspective="right",
+            )
+            neutral_article, left_article, right_article = await asyncio.gather(
+                neutral_task, left_task, right_task,
+            )
 
-            # Gate check before publishing
-            gate = check_publish_gate(article)
+            # Gate check before publishing (neutral only)
+            gate = check_publish_gate(neutral_article)
             if not gate.allowed:
                 log.warning(
                     "publish_blocked",
@@ -131,14 +147,14 @@ async def run_cycle(
                 )
                 continue
 
-            # Attest
-            attestation = await create_attestation(article, tee_attestation)
+            # Attest (neutral only)
+            attestation = await create_attestation(neutral_article, tee_attestation)
             tx_hash = await publish_onchain(attestation)
             if tx_hash:
                 attestation.tx_hash = tx_hash
 
             gate = check_publish_gate(
-                article,
+                neutral_article,
                 attestation=attestation,
                 require_attestation=require_onchain_attestation,
             )
@@ -150,17 +166,25 @@ async def run_cycle(
                 )
                 continue
 
-            # Publish
-            await publish_article(article, attestation)
-            await publish_thread(article, attestation)
+            # Publish neutral via social channels
+            await publish_article(neutral_article, attestation)
+            await publish_thread(neutral_article, attestation)
+
+            # Store all 3 perspectives as a group
+            store.add({
+                "topic": cluster.topic,
+                "left": _article_to_store_dict(left_article),
+                "neutral": _article_to_store_dict(neutral_article, attestation_hash=attestation.article_hash),
+                "right": _article_to_store_dict(right_article),
+            })
 
             published += 1
             log.info(
                 "article_complete",
                 topic=cluster.topic,
-                headline=article.headline[:80],
-                slant=article.slant_score.score if article.slant_score else None,
-                rounds=article.calibration_rounds,
+                headline=neutral_article.headline[:80],
+                slant=neutral_article.slant_score.score if neutral_article.slant_score else None,
+                rounds=neutral_article.calibration_rounds,
             )
             _write_heartbeat()
 
@@ -169,6 +193,50 @@ async def run_cycle(
             _write_heartbeat()
 
     return published
+
+
+async def _generate_and_evaluate(
+    cluster: TopicCluster,
+    client: AsyncOpenAI,
+    model: str,
+    evaluator_model: str,
+    perspective: str,
+) -> GeneratedArticle:
+    """Generate a left or right article and evaluate its slant (no calibration)."""
+    article = await generate_article(
+        topic=cluster.topic,
+        sources=cluster.articles,
+        client=client,
+        model=model,
+        perspective=perspective,
+    )
+    slant = await evaluate_slant(
+        headline=article.headline,
+        body=article.body,
+        client=client,
+        evaluator_model=evaluator_model,
+    )
+    return article.model_copy(update={"slant_score": slant})
+
+
+def _article_to_store_dict(article: GeneratedArticle, attestation_hash: str | None = None) -> dict:
+    """Convert a GeneratedArticle to a JSON-serializable dict for the store."""
+    return {
+        "headline": article.headline,
+        "body": article.body,
+        "perspective": article.perspective,
+        "sources": [
+            {"name": a.source_name, "url": a.url, "slant": a.source_slant}
+            for a in article.sources_used
+        ],
+        "slant": article.slant_score.model_dump() if article.slant_score else None,
+        "calibration_rounds": article.calibration_rounds,
+        "calibration_history": article.calibration_history,
+        "model_id": article.model_id,
+        "content_hash": article.content_hash,
+        "prompt_hash": article.prompt_hash,
+        "attestation_hash": attestation_hash,
+    }
 
 
 async def main():

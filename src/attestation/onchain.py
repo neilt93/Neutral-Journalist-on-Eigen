@@ -165,16 +165,39 @@ def _log_attestation(record: AttestationRecord) -> None:
 async def get_tee_attestation() -> str:
     """
     Get TEE attestation from the EigenCompute runtime.
-    In a TEE, this calls the attestation endpoint to get a signed
-    proof that the code running matches the expected hash.
+
+    Inside an EigenCompute TEE, the container launcher exposes a Unix socket
+    at /run/container_launcher/teeserver.sock. We POST a challenge to
+    /v1/bound_evidence and receive Intel TDX hardware attestation bytes
+    proving the running Docker image matches the whitelisted digest.
+
+    Outside a TEE (local dev), returns a deterministic placeholder hash.
     """
+    tee_socket = "/run/container_launcher/teeserver.sock"
+    # Fall back to env var for custom setups, then check for the socket
     endpoint = os.getenv("EIGENCOMPUTE_TEE_ATTESTATION_ENDPOINT")
-    if not endpoint:
-        log.info("tee_not_available", msg="running outside TEE, using placeholder")
-        return hashlib.sha256(b"dev-tee-attestation").hexdigest()
 
     import httpx
-    async with httpx.AsyncClient(timeout=30) as client:
-        resp = await client.get(endpoint)
-        resp.raise_for_status()
-        return resp.json()["attestation"]
+    from pathlib import Path
+
+    if endpoint:
+        # Custom endpoint (e.g. remote KMS proxy)
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(endpoint, json={"challenge": os.urandom(32).hex()})
+            resp.raise_for_status()
+            return resp.json()["attestation"]
+
+    if Path(tee_socket).exists():
+        # Inside EigenCompute TEE — use the local Unix socket
+        transport = httpx.AsyncHTTPTransport(uds=tee_socket)
+        async with httpx.AsyncClient(transport=transport, timeout=30) as client:
+            challenge = os.urandom(32).hex()
+            resp = await client.post(
+                "http://localhost/v1/bound_evidence",
+                json={"challenge": challenge},
+            )
+            resp.raise_for_status()
+            return resp.json()["attestation"]
+
+    log.info("tee_not_available", msg="running outside TEE, using placeholder")
+    return hashlib.sha256(b"dev-tee-attestation").hexdigest()

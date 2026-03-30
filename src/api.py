@@ -19,13 +19,16 @@ from fastapi.staticfiles import StaticFiles
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
+from difflib import SequenceMatcher
+
 from src.analysis.slant import evaluate_slant
 from src.article_selection import select_articles_for_prompt
 from src.attestation.onchain import create_attestation, get_tee_attestation, publish_onchain
 from src.generation.calibration import calibrated_generate
+from src.generation.writer import generate_article
 from src.ingestion.fetcher import fetch_all
 from src.ingestion.parser import cluster_by_topic, load_topic_settings
-from src.models import GeneratedArticle, SlantScore, SourceConfig
+from src.models import GeneratedArticle, SlantScore, SourceConfig, TopicCluster
 from src.publishing.gate import check_publish_gate
 from src.store import ArticleStore, PipelineLog
 
@@ -86,6 +89,7 @@ def _article_to_dict(article: GeneratedArticle, attestation_hash: str | None = N
         "headline": article.headline,
         "body": article.body,
         "image_url": image_url,
+        "perspective": article.perspective,
         "sources": [
             {"name": a.source_name, "url": a.url, "slant": a.source_slant}
             for a in article.sources_used
@@ -161,7 +165,15 @@ async def run_pipeline_cycle():
     tee_attestation = await get_tee_attestation()
 
     # Deduplicate: skip topics we've already written about recently
-    existing_headlines = {a.get("headline", "").lower() for a in store.list_all(limit=20)}
+    # Groups store headlines under "neutral"/"left"/"right" sub-dicts; legacy stores flat.
+    existing_headlines = set()
+    for entry in store.list_all(limit=20):
+        if "neutral" in entry and isinstance(entry["neutral"], dict):
+            h = entry["neutral"].get("headline", "")
+        else:
+            h = entry.get("headline", "")
+        if h:
+            existing_headlines.add(h.lower())
 
     for cluster in clusters[:3]:  # Cap at 3 articles per cycle
         topic = cluster.topic
@@ -177,17 +189,27 @@ async def run_pipeline_cycle():
                          topic=topic, source_count=len(selected), outlets=len(by_source))
 
         try:
-            # Generate + calibrate
-            article = await calibrated_generate(
+            # Generate neutral (calibrated) + left/right (evaluated only) in parallel
+            neutral_task = calibrated_generate(
                 cluster=cluster,
                 client=client,
                 generation_model=model,
                 evaluator_model=evaluator,
             )
+            left_task = _generate_and_evaluate(
+                cluster=cluster, client=client, model=model,
+                evaluator_model=evaluator, perspective="left",
+            )
+            right_task = _generate_and_evaluate(
+                cluster=cluster, client=client, model=model,
+                evaluator_model=evaluator, perspective="right",
+            )
+            neutral_article, left_article, right_article = await asyncio.gather(
+                neutral_task, left_task, right_task,
+            )
 
             # Dedup: skip if headline is too similar to an existing article
-            from difflib import SequenceMatcher
-            headline_lower = article.headline.lower()
+            headline_lower = neutral_article.headline.lower()
             is_dup = any(
                 SequenceMatcher(None, headline_lower, h).ratio() > 0.6
                 for h in existing_headlines
@@ -197,40 +219,70 @@ async def run_pipeline_cycle():
                 continue
             existing_headlines.add(headline_lower)
 
-            slant = article.slant_score
-            pipeline_log.log("evaluation", f"[{topic}] Slant: {slant.overall_slant_score:+.2f}, "
-                             f"Rounds: {article.calibration_rounds}",
-                             topic=topic,
-                             slant=slant.overall_slant_score if slant else None,
-                             rounds=article.calibration_rounds)
+            slant = neutral_article.slant_score
+            if slant:
+                pipeline_log.log("evaluation", f"[{topic}] Neutral slant: {slant.overall_slant_score:+.2f}, "
+                                 f"Rounds: {neutral_article.calibration_rounds}",
+                                 topic=topic,
+                                 slant=slant.overall_slant_score,
+                                 rounds=neutral_article.calibration_rounds)
 
-            # Gate check
-            gate = check_publish_gate(article)
+            # Gate check (neutral article only)
+            gate = check_publish_gate(neutral_article)
             if not gate.allowed:
                 pipeline_log.log("gate", f"[{topic}] BLOCKED: {gate.reason}", topic=topic)
                 continue
 
             pipeline_log.log("gate", f"[{topic}] PASSED", topic=topic)
 
-            # Attest
-            attestation = await create_attestation(article, tee_attestation)
+            # Attest (neutral article)
+            attestation = await create_attestation(neutral_article, tee_attestation)
             tx_hash = await publish_onchain(attestation)
             if tx_hash:
                 attestation.tx_hash = tx_hash
 
-            # Store
-            article_dict = _article_to_dict(article, attestation.article_hash)
-            store.add(article_dict)
+            # Store as a group: left, neutral, right
+            group = {
+                "topic": topic,
+                "left": _article_to_dict(left_article),
+                "neutral": _article_to_dict(neutral_article, attestation.article_hash),
+                "right": _article_to_dict(right_article),
+            }
+            store.add(group)
             published += 1
 
-            pipeline_log.log("published", f"[{topic}] Published: {article.headline[:60]}...",
-                             topic=topic, headline=article.headline)
+            pipeline_log.log("published", f"[{topic}] Published 3 perspectives: {neutral_article.headline[:50]}...",
+                             topic=topic, headline=neutral_article.headline)
 
         except Exception as e:
             pipeline_log.log("error", f"[{topic}] Failed: {e}", topic=topic)
             log.exception("cluster_failed", topic=topic)
 
     return published
+
+
+async def _generate_and_evaluate(
+    cluster: TopicCluster,
+    client: AsyncOpenAI,
+    model: str,
+    evaluator_model: str,
+    perspective: str,
+) -> GeneratedArticle:
+    """Generate a left or right article and evaluate its slant (no calibration)."""
+    article = await generate_article(
+        topic=cluster.topic,
+        sources=cluster.articles,
+        client=client,
+        model=model,
+        perspective=perspective,
+    )
+    slant = await evaluate_slant(
+        headline=article.headline,
+        body=article.body,
+        client=client,
+        evaluator_model=evaluator_model,
+    )
+    return article.model_copy(update={"slant_score": slant})
 
 
 async def pipeline_loop():
