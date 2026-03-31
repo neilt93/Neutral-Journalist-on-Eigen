@@ -22,5 +22,8 @@ USER root
 HEALTHCHECK --interval=60s --timeout=10s \
     CMD python -c "import os, sys, time; from pathlib import Path; path = Path(os.getenv('AGENT_HEARTBEAT_PATH', '/tmp/neutral_journalism_agent.heartbeat')); max_age = (int(os.getenv('AGENT_LOOP_INTERVAL_MINUTES', '60')) + 15) * 60; sys.exit(0 if path.exists() and time.time() - path.stat().st_mtime <= max_age else 1)"
 
-# Run the production daemon (attested ingest -> calibrate -> publish loop)
-ENTRYPOINT ["python", "-m", "src.main"]
+# Expose web UI port
+EXPOSE 8000
+
+# Run the web app (includes background pipeline loop + serves the demo UI)
+ENTRYPOINT ["uvicorn", "src.api:app", "--host", "0.0.0.0", "--port", "8000"]
