@@ -63,11 +63,14 @@ async def _fetch_rss(source: SourceConfig, hours_back: int) -> list[IngestedArti
     for (entry, published), (text, image_url) in zip(candidates, results):
         if not text:
             continue
+        title = entry.get("title", "")
+        if isinstance(title, bytes):
+            title = title.decode("utf-8", errors="replace")
         articles.append(IngestedArticle(
             source_name=source.name,
             source_slant=source.slant,
             source_reliability=source.reliability,
-            title=entry.get("title", ""),
+            title=title,
             url=entry.get("link", ""),
             text=text,
             image_url=image_url,
@@ -120,9 +123,16 @@ def _extract_article(url: str) -> tuple[str, str | None]:
     try:
         article = NewspaperArticle(url)
         article.download()
+        # Guard against non-UTF-8 content from source sites
+        if isinstance(article.html, bytes):
+            article.html = article.html.decode("utf-8", errors="replace")
         article.parse()
         image = article.top_image if hasattr(article, "top_image") else None
-        return article.text, image or None
+        text = article.text or ""
+        # Ensure text is clean UTF-8
+        if isinstance(text, bytes):
+            text = text.decode("utf-8", errors="replace")
+        return text, image or None
     except Exception:
         log.debug("extraction_failed", url=url)
         return "", None
