@@ -28,6 +28,7 @@ from src.generation.calibration import calibrated_generate
 from src.generation.writer import generate_article
 from src.ingestion.fetcher import fetch_all
 from src.ingestion.parser import cluster_by_topic, load_topic_settings
+from src.media import pick_representative_image
 from src.models import GeneratedArticle, SlantScore, SourceConfig, TopicCluster
 from src.publishing.gate import check_publish_gate
 from src.store import ArticleStore, PipelineLog
@@ -73,22 +74,11 @@ def _load_source_settings() -> dict:
     }
 
 
-_used_images: set[str] = set()
-
-
 def _article_to_dict(article: GeneratedArticle, attestation_hash: str | None = None) -> dict:
-    # Pick a unique image from sources (avoid reusing across articles)
-    image_url = None
-    for src in sorted(article.sources_used, key=lambda a: a.source_reliability.value, reverse=True):
-        if src.image_url and src.image_url not in _used_images:
-            image_url = src.image_url
-            _used_images.add(image_url)
-            break
-
     return {
         "headline": article.headline,
         "body": article.body,
-        "image_url": image_url,
+        "image_url": pick_representative_image(article),
         "perspective": article.perspective,
         "sources": [
             {"name": a.source_name, "url": a.url, "slant": a.source_slant}

@@ -23,6 +23,7 @@ from src.generation.calibration import calibrated_generate
 from src.generation.writer import generate_article
 from src.ingestion.fetcher import fetch_all
 from src.ingestion.parser import cluster_by_topic, load_topic_settings
+from src.media import pick_representative_image
 from src.models import SourceConfig, TopicCluster
 from src.publishing.gate import check_publish_gate
 from src.publishing.publisher import publish_article, publish_thread
@@ -226,6 +227,7 @@ def _article_to_store_dict(article: GeneratedArticle, attestation_hash: str | No
     return {
         "headline": article.headline,
         "body": article.body,
+        "image_url": pick_representative_image(article),
         "perspective": article.perspective,
         "sources": [
             {"name": a.source_name, "url": a.url, "slant": a.source_slant}

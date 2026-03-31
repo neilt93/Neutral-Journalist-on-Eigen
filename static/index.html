@@ -6,7 +6,7 @@
 <title>The Neutral Wire</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Georgia,'Times New Roman',serif;background:#fafaf8;color:#1a1a1a}
+  body{font-family:Georgia,'Times New Roman',serif;background:radial-gradient(circle at top,#f5efe5 0,#faf7f2 28%,#f6f1e8 100%);color:#1a1a1a}
   a{color:#1a1a1a;text-decoration:none}
 
   /* Masthead */
@@ -30,24 +30,30 @@
   .banner.active{display:block}
 
   /* Pages */
-  .page{display:none;max-width:1400px;margin:0 auto;padding:2.5rem 1.5rem}
+  .page{display:none;max-width:1500px;margin:0 auto;padding:2rem 1.25rem 3rem}
   .page.active{display:block}
 
   /* Feed */
   .feed-empty{text-align:center;padding:5rem 1rem;color:#999}
   .feed-empty p{margin-bottom:0.5rem}
 
-  /* === Three-column layout === */
-  .topic-group{margin-bottom:3rem;padding-bottom:2.5rem;border-bottom:2px solid #e0e0e0}
-  .topic-group:last-child{border-bottom:none}
-  .topic-header{text-align:center;margin-bottom:1.5rem}
-  .topic-header h2{font-size:1.5rem;font-weight:400;margin-bottom:0.3rem}
-  .topic-header .topic-meta{font-size:0.78rem;color:#999;font-family:-apple-system,sans-serif}
+  /* === Story layout === */
+  .topic-group{margin-bottom:2.75rem;background:#fffdf9;border:1px solid #e6ddd0;border-radius:24px;overflow:hidden;box-shadow:0 24px 60px rgba(76,49,25,0.08)}
+  .topic-hero{position:relative;min-height:240px;background:linear-gradient(135deg,#243b53 0%,#102a43 45%,#d9844a 100%);display:flex;align-items:flex-end}
+  .topic-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .topic-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,15,28,0.1) 0%,rgba(7,15,28,0.72) 70%,rgba(7,15,28,0.88) 100%)}
+  .topic-hero-content{position:relative;z-index:1;padding:1.5rem 1.5rem 1.3rem;color:#fff;max-width:900px}
+  .topic-kicker{display:inline-flex;align-items:center;gap:0.45rem;padding:0.35rem 0.7rem;border:1px solid rgba(255,255,255,0.25);border-radius:999px;background:rgba(255,255,255,0.12);backdrop-filter:blur(6px);font:700 0.7rem/1 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:0.14em;text-transform:uppercase}
+  .topic-hero h2{font-size:2.2rem;font-weight:400;line-height:1.02;margin:0.9rem 0 0.45rem}
+  .topic-meta{font-size:0.84rem;color:rgba(255,255,255,0.86);font-family:-apple-system,sans-serif}
+  .topic-source-row{display:flex;flex-wrap:wrap;gap:0.45rem;margin-top:0.95rem}
+  .topic-pill,.source-chip{display:inline-flex;align-items:center;gap:0.35rem;padding:0.32rem 0.62rem;border-radius:999px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:0.72rem;line-height:1;background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.18);color:#fff}
+  .topic-pill strong{font-weight:700}
 
-  .columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem}
-  @media(max-width:900px){.columns{grid-template-columns:1fr}}
+  .columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;padding:1.25rem 1.25rem 1.5rem;align-items:start}
+  @media(max-width:1100px){.columns{grid-template-columns:1fr}}
 
-  .col{background:#fff;border:1px solid #e8e8e8;border-radius:6px;padding:1.25rem;display:flex;flex-direction:column}
+  .col{background:#fffef9;border:1px solid #ece3d6;border-radius:18px;padding:1.15rem;display:flex;flex-direction:column;min-height:100%;box-shadow:0 12px 24px rgba(65,38,14,0.05)}
   .col.col-left{border-top:3px solid #3b82f6}
   .col.col-neutral{border-top:3px solid #22c55e}
   .col.col-right{border-top:3px solid #ef4444}
@@ -61,9 +67,15 @@
   .col-right .col-label{color:#ef4444}
   .col-right .col-label .dot{background:#ef4444}
 
-  .col h3{font-size:1.15rem;font-weight:400;line-height:1.35;margin-bottom:0.6rem}
-  .col-body{font-size:0.92rem;line-height:1.75;color:#333;flex:1}
+  .col h3{font-size:1.3rem;font-weight:400;line-height:1.2;margin-bottom:0.65rem}
+  .col-body{font-size:1rem;line-height:1.75;color:#333;flex:1}
   .col-body p{margin-bottom:0.75rem}
+  .col-source-row{display:flex;flex-wrap:wrap;gap:0.4rem;margin:0.9rem 0 0.25rem}
+  .source-chip{background:#f5efe4;border:1px solid #e4dac8;color:#5d4a36}
+  .col-actions{display:flex;flex-wrap:wrap;gap:0.55rem;margin-top:0.75rem}
+  .source-list{display:grid;gap:0.55rem}
+  .source-link{display:flex;justify-content:space-between;gap:0.75rem;padding:0.6rem 0.7rem;border-radius:10px;background:#fff;border:1px solid #ece4d7;font-family:-apple-system,sans-serif;font-size:0.78rem;color:#5d4a36}
+  .source-link small{color:#9a8f82}
 
   /* Slant meter */
   .slant-meter{margin:0.75rem 0;font-family:-apple-system,sans-serif}
@@ -83,7 +95,7 @@
   .failed-badge{color:#ef4444;background:#fef2f2;border-color:#fecaca}
 
   /* Expand sections */
-  .expand-toggle{font-family:-apple-system,sans-serif;font-size:0.72rem;color:#4a6fa5;cursor:pointer;background:none;border:none;padding:0;margin-right:0.75rem;margin-top:0.5rem}
+  .expand-toggle{font-family:-apple-system,sans-serif;font-size:0.74rem;color:#4a6fa5;cursor:pointer;background:none;border:none;padding:0}
   .expand-toggle:hover{text-decoration:underline}
   .expand-content{display:none;margin-top:0.75rem;padding:0.75rem;background:#f8f8f6;border:1px solid #e8e8e8;border-radius:4px;font-family:-apple-system,sans-serif;font-size:0.78rem}
   .expand-content.open{display:block}
@@ -198,15 +210,25 @@ function renderArticles(groups){
 }
 
 function renderGroup(g, gi){
-  const topic = g.topic || 'News';
+  const topic = prettyTopic(g.topic || 'News');
   const neutral = g.neutral;
   const time = g.stored_at ? new Date(g.stored_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
-  const outlets = new Set((neutral.sources||[]).map(x=>x.name)).size;
+  const sourceNames = [...new Set((neutral.sources||[]).map(x=>x.name))];
+  const outlets = sourceNames.length;
+  const heroImage = pickGroupImage(g);
 
   return `<div class="topic-group">
-    <div class="topic-header">
-      <h2>${esc(topic)}</h2>
-      <div class="topic-meta">${time} &middot; ${(neutral.sources||[]).length} source articles from ${outlets} outlets</div>
+    <div class="topic-hero">
+      ${heroImage ? `<img src="${esc(heroImage)}" alt="${esc(neutral.headline || topic)}" loading="lazy" referrerpolicy="no-referrer">` : ''}
+      <div class="topic-hero-content">
+        <div class="topic-kicker">Story Cluster</div>
+        <h2>${esc(topic)}</h2>
+        <div class="topic-meta">${time} &middot; ${(neutral.sources||[]).length} source articles from ${outlets} outlets</div>
+        <div class="topic-source-row">
+          <span class="topic-pill"><strong>Neutral</strong> ${neutral.slant && neutral.slant.overall_slant_score!=null ? fmtS(neutral.slant.overall_slant_score) : 'n/a'}</span>
+          ${sourceNames.slice(0,5).map(name=>`<span class="topic-pill">${esc(name)}</span>`).join('')}
+        </div>
+      </div>
     </div>
     <div class="columns">
       ${renderCol(g.left, 'left', gi)}
@@ -222,8 +244,11 @@ function renderCol(a, perspective, gi){
   const s = a.slant || {};
   const sl = s.overall_slant_score;
   const pass = s.pass_fail;
-  const paras = (a.body||'').split('\n\n').filter(Boolean).slice(0,4).map(p=>`<p>${esc(p)}</p>`).join('');
+  const paragraphs = (a.body||'').split('\n\n').filter(Boolean);
+  const preview = paragraphs.slice(0,2).map(p=>`<p>${esc(p)}</p>`).join('');
+  const rest = paragraphs.slice(2).map(p=>`<p>${esc(p)}</p>`).join('');
   const id = `${gi}-${perspective}`;
+  const uniqueSources = [...new Set((a.sources||[]).map(src=>src.name))];
 
   const labels = {left:'Left-Leaning Agent', neutral:'Neutral Agent', right:'Right-Leaning Agent'};
 
@@ -243,6 +268,10 @@ function renderCol(a, perspective, gi){
     <div class="cal-scores">Slant <span>${fmtS(r.slant)}</span> &middot; Loaded <span>${pct(r.loaded_language)}</span> &middot; Consensus <span>${pct(r.consensus_preservation)}</span></div>
     <div class="cal-rationale">${esc((r.rationale||'').slice(0,150))}${(r.rationale||'').length>150?'...':''}</div>
   </div>`).join('') : '';
+  const sourcesHtml = (a.sources||[]).map(src=>`<a class="source-link" href="${esc(src.url)}" target="_blank" rel="noreferrer">
+    <span>${esc(src.name)}</span>
+    <small>${src.slant>=0?'+':''}${Number(src.slant).toFixed(2)}</small>
+  </a>`).join('');
 
   // Attestation (neutral only)
   const ah = a.attestation_hash || '';
@@ -264,12 +293,18 @@ function renderCol(a, perspective, gi){
     ${perspective==='neutral' ? `<span class="${pass?'verified-badge':'verified-badge failed-badge'}">${pass?'Verified Neutral':'Did Not Pass'} ${sl!=null?fmtS(sl):''}</span>` : ''}
     ${perspective==='neutral' && a.calibration_rounds ? `<span style="font-family:-apple-system,sans-serif;font-size:0.7rem;color:#888;margin-left:0.4rem">${a.calibration_rounds} calibration rounds</span>` : ''}
 
-    <div class="col-body" style="margin-top:0.75rem">${paras}</div>
+    <div class="col-source-row">${uniqueSources.slice(0,4).map(name=>`<span class="source-chip">${esc(name)}</span>`).join('')}</div>
 
-    <div>
+    <div class="col-body" style="margin-top:0.75rem">${preview}</div>
+
+    <div class="col-actions">
+      ${rest ? `<button class="expand-toggle" onclick="tog('body-${id}')">Read full article</button>` : ''}
+      <button class="expand-toggle" onclick="tog('src-${id}')">Source coverage</button>
       ${perspective==='neutral' && hist.length ? `<button class="expand-toggle" onclick="tog('cal-${id}')">Calibration History</button>` : ''}
       <button class="expand-toggle" onclick="tog('rat-${id}')">Evaluator Rationale</button>
     </div>
+    ${rest ? `<div class="expand-content" id="body-${id}">${rest}</div>` : ''}
+    <div class="expand-content source-list" id="src-${id}">${sourcesHtml || 'No source links available'}</div>
     ${perspective==='neutral' && hist.length ? `<div class="expand-content" id="cal-${id}">${histHtml}</div>` : ''}
     <div class="expand-content" id="rat-${id}">${s.rationale ? esc(s.rationale) : 'No rationale available'}</div>
     ${attestHtml}
@@ -306,10 +341,12 @@ function renderActivity(status,events){
 }
 
 function capFirst(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+function prettyTopic(s){return String(s||'News').replace(/_/g,' ').replace(/\b\w/g,m=>m.toUpperCase())}
 function fmtS(v){return(v>=0?'+':'')+v.toFixed(2)}
 function pct(v){return v!=null?(v*100).toFixed(0)+'%':'?'}
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
 function sColor(v){const a=Math.abs(v);return a<=0.15?'#22c55e':a<=0.3?'#f59e0b':'#ef4444'}
+function pickGroupImage(g){return (g.neutral&&g.neutral.image_url)||(g.left&&g.left.image_url)||(g.right&&g.right.image_url)||''}
 
 async function poll(){try{const[a,s,l]=await Promise.all([fetch('/api/articles').then(r=>r.json()),fetch('/api/pipeline/status').then(r=>r.json()),fetch('/api/pipeline/log?limit=60').then(r=>r.json())]);renderArticles(a);renderActivity(s,l)}catch(e){}}
 async function trigger(){await fetch('/api/pipeline/trigger',{method:'POST'})}
