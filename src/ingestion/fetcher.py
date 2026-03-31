@@ -36,10 +36,29 @@ async def fetch_all(sources: list[SourceConfig], hours_back: int = 24) -> list[I
     return articles
 
 
+def _sanitize_text(text: str) -> str:
+    """Ensure text is clean UTF-8 by replacing any problematic bytes."""
+    if isinstance(text, bytes):
+        return text.decode("utf-8", errors="replace")
+    # Re-encode and decode to strip any embedded surrogates or invalid chars
+    return text.encode("utf-8", errors="replace").decode("utf-8", errors="replace")
+
+
+def _parse_rss_feed(url: str):
+    """Parse RSS feed with encoding error handling."""
+    import httpx as _httpx
+    # Fetch raw bytes ourselves so we can control encoding
+    resp = _httpx.get(url, timeout=30, follow_redirects=True)
+    raw = resp.content
+    # Decode with replacement to avoid crashes on malformed feeds
+    text = raw.decode("utf-8", errors="replace")
+    return feedparser.parse(text)
+
+
 async def _fetch_rss(source: SourceConfig, hours_back: int) -> list[IngestedArticle]:
     """Parse an RSS feed and extract full article text."""
     loop = asyncio.get_running_loop()
-    feed = await loop.run_in_executor(None, feedparser.parse, source.url)
+    feed = await loop.run_in_executor(None, _parse_rss_feed, source.url)
     cutoff = _utc_now() - timedelta(hours=hours_back)
 
     # Filter by date first, then extract text in parallel
@@ -63,16 +82,13 @@ async def _fetch_rss(source: SourceConfig, hours_back: int) -> list[IngestedArti
     for (entry, published), (text, image_url) in zip(candidates, results):
         if not text:
             continue
-        title = entry.get("title", "")
-        if isinstance(title, bytes):
-            title = title.decode("utf-8", errors="replace")
         articles.append(IngestedArticle(
             source_name=source.name,
             source_slant=source.slant,
             source_reliability=source.reliability,
-            title=title,
+            title=_sanitize_text(entry.get("title", "")),
             url=entry.get("link", ""),
-            text=text,
+            text=_sanitize_text(text),
             image_url=image_url,
             published_at=published,
         ))
@@ -98,7 +114,7 @@ async def _fetch_api(client: httpx.AsyncClient, source: SourceConfig, hours_back
 
     articles = []
     for item in data.get("response", {}).get("results", []):
-        text = item.get("fields", {}).get("bodyText", "")
+        text = _sanitize_text(item.get("fields", {}).get("bodyText", ""))
         if not text:
             continue
         published_at = _parse_iso(item.get("webPublicationDate"))
@@ -108,7 +124,7 @@ async def _fetch_api(client: httpx.AsyncClient, source: SourceConfig, hours_back
             source_name=source.name,
             source_slant=source.slant,
             source_reliability=source.reliability,
-            title=item.get("webTitle", ""),
+            title=_sanitize_text(item.get("webTitle", "")),
             url=item.get("webUrl", ""),
             text=text,
             published_at=published_at,
@@ -128,10 +144,7 @@ def _extract_article(url: str) -> tuple[str, str | None]:
             article.html = article.html.decode("utf-8", errors="replace")
         article.parse()
         image = article.top_image if hasattr(article, "top_image") else None
-        text = article.text or ""
-        # Ensure text is clean UTF-8
-        if isinstance(text, bytes):
-            text = text.decode("utf-8", errors="replace")
+        text = _sanitize_text(article.text or "")
         return text, image or None
     except Exception:
         log.debug("extraction_failed", url=url)
