@@ -162,7 +162,9 @@ async def run_pipeline_cycle():
 
     # 3. Process each cluster
     published = 0
+    pipeline_log.log("attestation", "Fetching TEE attestation...")
     tee_attestation = await get_tee_attestation()
+    pipeline_log.log("attestation", f"TEE attestation ready ({len(tee_attestation)} hex chars)")
 
     # Deduplicate: skip topics we've already written about recently
     # Groups store headlines under "neutral"/"left"/"right" sub-dicts; legacy stores flat.
@@ -174,6 +176,7 @@ async def run_pipeline_cycle():
             h = entry.get("headline", "")
         if h:
             existing_headlines.add(h.lower())
+    pipeline_log.log("system", f"Loaded {len(existing_headlines)} existing headlines for dedupe")
 
     for cluster in clusters[:3]:  # Cap at 3 articles per cycle
         topic = cluster.topic

@@ -109,7 +109,9 @@ async def run_cycle(
 
     # 4. Generate, calibrate, attest, publish for each topic cluster
     published = 0
+    log.info("cycle_phase", phase="attestation")
     tee_attestation = await get_tee_attestation()
+    log.info("tee_attestation_ready", hex_chars=len(tee_attestation))
     require_onchain_attestation = _env_flag("REQUIRE_ONCHAIN_ATTESTATION", True)
     store = ArticleStore()
 

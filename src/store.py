@@ -30,12 +30,20 @@ class ArticleStore:
 
     def _read(self) -> list[dict]:
         with _LOCK:
-            return json.loads(self.path.read_text())
+            try:
+                return json.loads(self.path.read_text(encoding="utf-8"))
+            except UnicodeDecodeError:
+                # Keep the pipeline alive if an older store file contains a few
+                # invalid bytes inside article text. Replacement preserves JSON
+                # structure while avoiding a hard failure during dedup reads.
+                repaired = self.path.read_bytes().decode("utf-8", errors="replace")
+                return json.loads(repaired)
 
     def _write(self, data: list[dict]) -> None:
         with _LOCK:
             self.path.write_text(
-                json.dumps(data, default=_default_serializer, indent=2)
+                json.dumps(data, default=_default_serializer, indent=2),
+                encoding="utf-8",
             )
 
     def add(self, article: dict) -> None:

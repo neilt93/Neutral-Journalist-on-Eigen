@@ -138,20 +138,24 @@ def _coerce_attestation_to_hex(value: Any) -> str:
 
 def _parse_attestation_response(response: Any) -> str:
     """Handle JSON, text, or raw binary attestation responses."""
-    try:
-        payload = response.json()
-    except (AttributeError, UnicodeDecodeError, ValueError, json.JSONDecodeError):
-        payload = None
-
-    if payload is not None:
-        extracted = _find_attestation_payload(payload)
-        if extracted is None and isinstance(payload, (str, bytes, bytearray, list)):
-            extracted = payload
-        if extracted is not None:
-            return _coerce_attestation_to_hex(extracted)
-
     raw = getattr(response, "content", b"")
+    if isinstance(raw, str):
+        raw = raw.encode("utf-8")
+
     if raw:
+        stripped = raw.lstrip()
+        if stripped[:1] in {b"{", b"["}:
+            try:
+                payload = json.loads(raw.decode("utf-8"))
+            except (UnicodeDecodeError, ValueError, json.JSONDecodeError):
+                payload = None
+            else:
+                extracted = _find_attestation_payload(payload)
+                if extracted is None and isinstance(payload, (str, bytes, bytearray, list)):
+                    extracted = payload
+                if extracted is not None:
+                    return _coerce_attestation_to_hex(extracted)
+
         return _coerce_attestation_to_hex(raw)
 
     text = getattr(response, "text", "")
