@@ -14,8 +14,12 @@ verify the agent's editorial process.
 
 from __future__ import annotations
 
+import base64
+import binascii
 import hashlib
+import json
 import os
+from typing import Any
 
 import structlog
 from eth_account import Account
@@ -66,6 +70,95 @@ def _compute_source_set_hash(source_hashes: list[str]) -> str:
     """SHA-256 of sorted source content hashes, for deterministic comparison."""
     joined = ",".join(sorted(source_hashes))
     return hashlib.sha256(joined.encode()).hexdigest()
+
+
+def _find_attestation_payload(value: Any) -> Any:
+    """Recursively find an attestation-like field inside a JSON payload."""
+    if isinstance(value, dict):
+        for key in ("attestation", "evidence", "quote"):
+            if key in value and value[key] is not None:
+                return value[key]
+        for nested in value.values():
+            found = _find_attestation_payload(nested)
+            if found is not None:
+                return found
+    elif isinstance(value, list):
+        for nested in value:
+            found = _find_attestation_payload(nested)
+            if found is not None:
+                return found
+    return None
+
+
+def _is_hex_string(value: str) -> bool:
+    candidate = value[2:] if value.lower().startswith("0x") else value
+    if not candidate or len(candidate) % 2 != 0:
+        return False
+    try:
+        bytes.fromhex(candidate)
+    except ValueError:
+        return False
+    return True
+
+
+def _coerce_attestation_to_hex(value: Any) -> str:
+    """Normalize attestation payloads into a hex string for onchain publishing."""
+    if value is None:
+        raise ValueError("TEE attestation payload was empty")
+
+    if isinstance(value, (bytes, bytearray)):
+        return bytes(value).hex()
+
+    if isinstance(value, list) and all(isinstance(item, int) and 0 <= item <= 255 for item in value):
+        return bytes(value).hex()
+
+    if not isinstance(value, str):
+        raise TypeError(f"Unsupported TEE attestation payload type: {type(value)!r}")
+
+    candidate = value.strip()
+    if not candidate:
+        raise ValueError("TEE attestation payload was empty")
+
+    if _is_hex_string(candidate):
+        return candidate[2:] if candidate.lower().startswith("0x") else candidate
+
+    try:
+        decoded = base64.b64decode(candidate, validate=True)
+    except (binascii.Error, ValueError):
+        decoded = b""
+
+    if decoded:
+        return decoded.hex()
+
+    # Some runtimes may return opaque text instead of a JSON wrapper. Preserve
+    # the exact bytes by hex-encoding the UTF-8 form so downstream code can
+    # still pass it through as `bytes`.
+    return candidate.encode("utf-8").hex()
+
+
+def _parse_attestation_response(response: Any) -> str:
+    """Handle JSON, text, or raw binary attestation responses."""
+    try:
+        payload = response.json()
+    except (AttributeError, UnicodeDecodeError, ValueError, json.JSONDecodeError):
+        payload = None
+
+    if payload is not None:
+        extracted = _find_attestation_payload(payload)
+        if extracted is None and isinstance(payload, (str, bytes, bytearray, list)):
+            extracted = payload
+        if extracted is not None:
+            return _coerce_attestation_to_hex(extracted)
+
+    raw = getattr(response, "content", b"")
+    if raw:
+        return _coerce_attestation_to_hex(raw)
+
+    text = getattr(response, "text", "")
+    if text:
+        return _coerce_attestation_to_hex(text)
+
+    raise ValueError("TEE attestation response was empty")
 
 
 def _compute_evaluator_output_hash(article: GeneratedArticle) -> str:
@@ -123,7 +216,7 @@ async def publish_onchain(record: AttestationRecord) -> str | None:
     evaluator_hash = bytes.fromhex(record.evaluator_output_hash)
     prompt_hash = bytes.fromhex(record.prompt_config_hash)
     slant_scaled = int(record.slant_score * 1000)  # float → int16
-    tee_bytes = bytes.fromhex(record.tee_attestation) if record.tee_attestation else b""
+    tee_bytes = bytes.fromhex(_coerce_attestation_to_hex(record.tee_attestation)) if record.tee_attestation else b""
 
     max_gas = int(os.getenv("ATTESTATION_MAX_GAS", "500000"))
     tx = await contract.functions.publish(
@@ -185,7 +278,7 @@ async def get_tee_attestation() -> str:
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(endpoint, json={"challenge": os.urandom(32).hex()})
             resp.raise_for_status()
-            return resp.json()["attestation"]
+            return _parse_attestation_response(resp)
 
     if Path(tee_socket).exists():
         # Inside EigenCompute TEE — use the local Unix socket
@@ -197,7 +290,7 @@ async def get_tee_attestation() -> str:
                 json={"challenge": challenge},
             )
             resp.raise_for_status()
-            return resp.json()["attestation"]
+            return _parse_attestation_response(resp)
 
     log.info("tee_not_available", msg="running outside TEE, using placeholder")
     return hashlib.sha256(b"dev-tee-attestation").hexdigest()
